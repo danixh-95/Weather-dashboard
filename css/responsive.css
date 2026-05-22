@@ -1,0 +1,209 @@
+/* =========================================================================
+   RESPONSIVE LAYOUT MEDIA QUERIES
+   ========================================================================= */
+
+/* Desktop / Large Screens (up to 1200px) */
+@media (max-width: 1240px) {
+    .dashboard-grid {
+        grid-template-columns: 340px 1fr;
+        gap: 16px;
+    }
+    
+    .metrics-row {
+        grid-template-columns: 240px 1fr;
+        gap: 16px;
+    }
+    
+    .details-grid {
+        gap: 12px;
+    }
+    
+    .city-name {
+        font-size: 1.8rem;
+    }
+    
+    .main-temp {
+        font-size: 4rem;
+    }
+}
+
+/* Tablet / Medium Screens (up to 992px) */
+@media (max-width: 992px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    
+    .sidebar-column {
+        flex-direction: row;
+        align-items: stretch;
+        gap: 24px;
+    }
+    
+    .weather-card {
+        flex: 1;
+        margin-bottom: 0;
+    }
+    
+    .recent-searches-wrapper {
+        width: 320px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .recent-searches {
+        height: 100%;
+    }
+}
+
+/* Small Screens / Mobile Landscape (up to 768px) */
+@media (max-width: 768px) {
+    .container {
+        padding: 90px 16px 24px 16px;
+    }
+    
+    /* Header layout changes */
+    .navbar {
+        padding: 10px 16px;
+    }
+    
+    .logo h1 {
+        display: none; /* Hide logo text to make room on mobile */
+    }
+    
+    .search-wrapper {
+        width: 220px;
+    }
+    
+    .datetime-panel {
+        display: none; /* Hide date/time on mobile header to save space */
+    }
+    
+    /* Sidebar goes back to column stacking */
+    .sidebar-column {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .recent-searches-wrapper {
+        width: 100%;
+    }
+    
+    /* Metrics panel changes */
+    .metrics-row {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .details-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    /* 5-Day Forecast: Horizontal Scroll Cards on mobile! */
+    .forecast-panel {
+        padding: 20px;
+    }
+    
+    .forecast-list {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 12px;
+        gap: 12px;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .forecast-row {
+        flex-direction: column;
+        min-width: 115px;
+        flex-shrink: 0;
+        align-items: center;
+        text-align: center;
+        padding: 16px 12px;
+        scroll-snap-align: start;
+        gap: 8px;
+    }
+    
+    .forecast-row:hover {
+        transform: translateY(-4px);
+    }
+    
+    .forecast-day {
+        width: auto;
+        font-size: 0.85rem;
+    }
+    
+    .forecast-condition-wrapper {
+        flex-direction: column;
+        margin: 0;
+        gap: 4px;
+    }
+    
+    .forecast-desc {
+        max-width: 90px;
+        font-size: 0.75rem;
+    }
+    
+    .forecast-temps {
+        font-size: 0.85rem;
+        justify-content: center;
+        gap: 8px;
+        text-align: center;
+        margin-top: 4px;
+    }
+}
+
+/* Extra Small Screens / Phones (up to 576px) */
+@media (max-width: 576px) {
+    .search-wrapper {
+        width: 100%;
+        max-width: 200px;
+    }
+    
+    .header-actions {
+        gap: 8px;
+    }
+    
+    .details-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .weather-card {
+        padding: 24px;
+    }
+    
+    .city-name {
+        font-size: 1.8rem;
+    }
+    
+    .main-temp {
+        font-size: 3.5rem;
+    }
+    
+    .weather-extra-details {
+        margin-top: 20px;
+        padding-top: 16px;
+    }
+    
+    .chart-card {
+        padding: 16px;
+        min-height: 300px;
+    }
+    
+    .chart-title {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 380px) {
+    /* Hide theme switch text or make search wrapper narrow */
+    .search-wrapper {
+        max-width: 150px;
+    }
+    
+    .logo svg {
+        width: 28px;
+        height: 28px;
+    }
+}

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-theme">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Optimization -->
+    <title>SkyGlass // Futuristic Weather Dashboard</title>
+    <meta name="description" content="A state-of-the-art responsive weather dashboard featuring beautiful glassmorphic visual widgets, hourly charts, air quality metrics, and ambient live backgrounds.">
+    <meta name="theme-color" content="#090e1a">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- Dynamic Animated Weather Background Overlay -->
+    <div id="weather-background"></div>
+
+    <!-- Floating Glassmorphic Navbar -->
+    <header>
+        <div class="navbar glass-panel">
+            <a href="#" class="logo" id="logo-link">
+                <!-- Glowing weather logo SVG -->
+                <svg viewBox="0 0 64 64">
+                    <circle cx="32" cy="32" r="12" fill="url(#logo-grad)" filter="drop-shadow(0 0 6px #00f2fe)" />
+                    <path d="M46,36 C46,31 41.5,27 36.5,27 C35.8,27 35.1,27.1 34.4,27.3 C32.4,23.7 28.5,21 24,21 C17.4,21 12,26.4 12,33 C12,33.7 12.1,34.3 12.2,35 C8.2,36.1 5,39.8 5,44 C5,48.9 9.1,53 14,53 L44,53 C48.9,53 53,48.9 53,44 C53,39.8 49.8,36.1 46,36 Z" fill="rgba(255,255,255,0.85)" />
+                    <defs>
+                        <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#4facfe" />
+                            <stop offset="100%" stop-color="#00f2fe" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1>SkyGlass</h1>
+            </a>
+            
+            <!-- Search bar & predictions -->
+            <form id="search-form" class="search-wrapper">
+                <input type="text" id="search-input" class="search-input" placeholder="Search city (e.g. Tokyo)..." autocomplete="off" aria-label="Search city">
+                <svg class="search-icon" viewBox="0 0 24 24">
+                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+                <ul id="suggestions-list" class="suggestions-list"></ul>
+            </form>
+            
+            <!-- Utility Actions -->
+            <div class="header-actions">
+                <!-- Location clock panel -->
+                <div class="datetime-panel">
+                    <span id="time" class="time">00:00 AM</span>
+                    <span id="date" class="date">Saturday, May 23</span>
+                </div>
+                
+                <!-- Geolocation Button -->
+                <button id="geo-btn" class="icon-btn" title="Auto-detect current location" aria-label="Auto detect location">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1c0-.55-.45-1-1-1s-1 .45-1 1v2.06C6.83 3.52 3.52 6.83 3.06 11H1c-.55 0-1 .45-1 1s.45 1 1 1h2.06c.46 4.17 3.77 7.48 7.94 7.94V23c0 .55.45 1 1 1s1-.45 1-1v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23c.55 0 1-.45 1-1s-.45-1-1-1h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+                    </svg>
+                </button>
+                
+                <!-- Light/Dark Switch Toggle -->
+                <button id="theme-btn" class="icon-btn theme-toggle" title="Switch Theme" aria-label="Toggle theme">
+                    <!-- Default: Moon svg -->
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12.3 22h-.1c-5.5 0-10-4.5-10-10 0-4.8 3.5-8.9 8.2-9.8.5-.1 1 .2 1.2.7.2.5 0 1.1-.4 1.4-3.5 2.4-4.8 7.2-2.9 10.9 1.9 3.6 6.5 5.3 10.2 3.8.5-.2 1.1 0 1.4.4.3.4.3 1-.1 1.4-2.1 2-5 3.2-7.9 3.2z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Dashboard Container -->
+    <main class="container">
+        <div class="dashboard-grid">
+            
+            <!-- SIDEBAR: Main Card and Search History -->
+            <section class="sidebar-column">
+                
+                <!-- Main Weather Card -->
+                <div class="weather-card glass-panel fade-in delay-1">
+                    
+                    <!-- Loading Skeleton Panel -->
+                    <div class="show-on-load">
+                        <div class="skeleton skeleton-text" style="width: 40%; height: 28px; border-radius: 14px; margin-bottom: 20px;"></div>
+                        <div class="skeleton skeleton-title" style="width: 80%; height: 36px; margin-bottom: 25px;"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                            <div class="skeleton" style="width: 140px; height: 70px; border-radius: 8px;"></div>
+                            <div class="skeleton skeleton-circle"></div>
+                        </div>
+                        <div class="skeleton skeleton-text" style="width: 90%;"></div>
+                        <div class="skeleton skeleton-text" style="width: 60%; margin-bottom: 25px;"></div>
+                        <div style="display: flex; gap: 10px;">
+                            <div class="skeleton" style="flex: 1; height: 70px; border-radius: 12px;"></div>
+                            <div class="skeleton" style="flex: 1; height: 70px; border-radius: 12px;"></div>
+                            <div class="skeleton" style="flex: 1; height: 70px; border-radius: 12px;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- True Content -->
+                    <div class="hide-on-load">
+                        <div class="weather-loc-tag">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            <span>Current Weather</span>
+                        </div>
+                        
+                        <div class="city-info">
+                            <span id="city-name" class="city-name">Loading...</span>
+                            <span id="country-code" class="country-code"></span>
+                        </div>
+                        
+                        <div class="weather-graphic-container">
+                            <div class="main-temp-wrapper">
+                                <span id="main-temp" class="main-temp">--<span class="temp-unit">°</span></span>
+                                <span id="weather-desc" class="weather-desc">loading weather...</span>
+                            </div>
+                            <div id="weather-icon-container" class="weather-graphic">
+                                <!-- Dynamic animated weather SVG inserts here -->
+                            </div>
+                        </div>
+                        
+                        <div class="weather-extra-details">
+                            <div class="weather-detail-pill">
+                                <svg viewBox="0 0 24 24"><path d="M12 2.04c-5.5 0-10 4.5-10 10 0 5.28 4.09 9.6 9.27 9.96v-2.01C7.39 19.63 4 16.2 4 12.04c0-4.41 3.59-8 8-8s8 3.59 8 8c0 4.16-3.39 7.59-7.27 7.95v2.01c5.18-.36 9.27-4.68 9.27-9.96 0-5.5-4.5-10-10-10z"/></svg>
+                                <span>Humidity</span>
+                                <span id="val-humidity">--%</span>
+                            </div>
+                            <div class="weather-detail-pill">
+                                <svg viewBox="0 0 24 24"><path d="M13.96 12.29l-2.69-2.7a.996.996 0 1 0-1.41 1.41l2.69 2.7c.39.39 1.03.39 1.41 0 .39-.39.39-1.02 0-1.41zm-6.27-1.1c.39-.39.39-1.03 0-1.42L5 7.08a.996.996 0 1 0-1.41 1.41l2.69 2.7c.38.39 1.02.39 1.41 0zm11.23 4.11l-2.69-2.7a.996.996 0 1 0-1.41 1.41l2.69 2.7c.39.39 1.03.39 1.41 0 .39-.39.39-1.02 0-1.41zM20 8.69h-2c-.55 0-1 .45-1 1s.45 1 1 1h2c.55 0 1-.45 1-1s-.45-1-1-1zm-9-5.6c0-.55-.45-1-1-1s-1 .45-1 1v2c0 .55.45 1 1 1s1-.45 1-1v-2zm-3 15c0-.55-.45-1-1-1s-1 .45-1 1v2c0 .55.45 1 1 1s1-.45 1-1v-2z"/></svg>
+                                <span>Wind Speed</span>
+                                <span id="val-wind-speed">-- m/s</span>
+                            </div>
+                            <div class="weather-detail-pill">
+                                <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                                <span>Visibility</span>
+                                <span id="val-visibility">-- km</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Searches Chip History Card -->
+                <div class="recent-searches glass-panel fade-in delay-2" id="recent-searches-wrapper">
+                    <span class="section-title-sm">
+                        <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.53.85-1.07-3.63-2.16V8h-1.5z"/></svg>
+                        Recent Locations
+                    </span>
+                    <div class="search-chips" id="search-chips">
+                        <!-- Clickable history chips will render here dynamically -->
+                    </div>
+                </div>
+                
+                <!-- 5-Day Weekly Forecast list -->
+                <div class="forecast-panel glass-panel fade-in delay-3">
+                    <span class="section-title-sm">
+                        <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+                        5-Day Forecast
+                    </span>
+                    
+                    <!-- Loading Skeletons -->
+                    <div class="show-on-load">
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                            <div class="skeleton" style="width: 100%; height: 50px; border-radius: 12px;"></div>
+                            <div class="skeleton" style="width: 100%; height: 50px; border-radius: 12px;"></div>
+                            <div class="skeleton" style="width: 100%; height: 50px; border-radius: 12px;"></div>
+                            <div class="skeleton" style="width: 100%; height: 50px; border-radius: 12px;"></div>
+                            <div class="skeleton" style="width: 100%; height: 50px; border-radius: 12px;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Forecast Cards Container -->
+                    <div class="forecast-list hide-on-load" id="forecast-container">
+                        <!-- 5 horizontal row items loaded dynamically -->
+                    </div>
+                </div>
+                
+            </section>
+            
+            <!-- MAIN CONTENT: AQI, details grid, Chart -->
+            <section class="main-column">
+                
+                <!-- Row 1: Air Quality and detailed metrics -->
+                <div class="metrics-row">
+                    
+                    <!-- Air Quality Widget Card -->
+                    <div class="aqi-card glass-panel fade-in delay-2">
+                        <span class="section-title-sm">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                            Air Quality Index
+                        </span>
+                        
+                        <!-- Skeletons -->
+                        <div class="show-on-load">
+                            <div style="display: flex; flex-direction: column; align-items: center; margin-top: 15px;">
+                                <div class="skeleton skeleton-circle" style="width: 100px; height: 100px; margin-bottom: 12px;"></div>
+                                <div class="skeleton skeleton-text" style="width: 60%; height: 20px;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- True Content -->
+                        <div class="aqi-indicator-wrap hide-on-load">
+                            <div class="aqi-circle" id="aqi-circle">
+                                <div class="aqi-value-display">
+                                    <span id="aqi-num" class="aqi-num">-</span>
+                                    <span class="aqi-lbl">AQI</span>
+                                </div>
+                            </div>
+                            <span id="aqi-status" class="aqi-status">--</span>
+                        </div>
+                        
+                        <!-- PM lists -->
+                        <div class="aqi-breakdown hide-on-load">
+                            <div class="pollutant">
+                                <span class="pollutant-name">PM<sub>2.5</sub></span>
+                                <span id="val-pm25" class="pollutant-value">--</span>
+                            </div>
+                            <div class="pollutant">
+                                <span class="pollutant-name">PM<sub>10</sub></span>
+                                <span id="val-pm10" class="pollutant-value">--</span>
+                            </div>
+                            <div class="pollutant">
+                                <span class="pollutant-name">CO</span>
+                                <span id="val-co" class="pollutant-value">--</span>
+                            </div>
+                            <div class="pollutant">
+                                <span class="pollutant-name">NO<sub>2</sub></span>
+                                <span id="val-no2" class="pollutant-value">--</span>
+                            </div>
+                            <div class="pollutant" style="grid-column: span 2;">
+                                <span class="pollutant-name">Ozone (O<sub>3</sub>)</span>
+                                <span id="val-o3" class="pollutant-value">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Metrics grid (6 components) -->
+                    <div class="details-grid">
+                        
+                        <!-- Feels Like -->
+                        <div class="detail-widget glass-panel fade-in delay-3">
+                            <div class="show-on-load">
+                                <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                                <div class="skeleton skeleton-title" style="width: 40%; margin-top: 15px; margin-bottom: 0;"></div>
+                            </div>
+                            <div class="hide-on-load">
+                                <div class="widget-header">
+                                    <svg viewBox="0 0 24 24"><path d="M15 13V5c0-1.66-1.34-3-3-3S9 3.34 9 5v8c-1.21.91-2 2.37-2 4 0 2.76 2.24 5 5 5s5-2.24 5-5c0-1.63-.79-3.09-2-4zm-3-9c.55 0 1 .45 1 1v3h-2V5c0-.55.45-1 1-1z"/></svg>
+                                    Thermal Index
+                                </div>
+                                <div class="widget-body">
+                                    <span class="widget-val" id="val-feels-like">--°C</span>
+                                    <span class="widget-desc">Feels like temperature.</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Wind Compass Direction -->
+                        <div class="detail-widget glass-panel fade-in delay-3">
+                            <div class="show-on-load">
+                                <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                                <div class="skeleton skeleton-title" style="width: 40%; margin-top: 15px; margin-bottom: 0;"></div>
+                            </div>
+                            <div class="hide-on-load">
+                                <div class="widget-header">
+                                    <svg viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/></svg>
+                                    Wind Heading
+                                </div>
+                                <div class="widget-body">
+                                    <div class="wind-arrow-container">
+                                        <svg class="wind-arrow" id="wind-arrow" viewBox="0 0 24 24">
+                                            <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/>
+                                        </svg>
+                                        <span class="widget-val" id="val-wind-speed" style="font-size: 1.4rem;">-- m/s</span>
+                                    </div>
+                                    <span class="widget-desc" style="margin-top: 4px;">Dynamic arrow direction.</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sunrise Sunset Tracker -->
+                        <div class="detail-widget glass-panel fade-in delay-4" style="grid-row: span 2; justify-content: flex-start; height: 100%;">
+                            <div class="show-on-load" style="width: 100%;">
+                                <div class="skeleton skeleton-text" style="width: 65%;"></div>
+                                <div class="skeleton" style="width: 90%; height: 35px; margin-top: 20px; border-radius: 6px;"></div>
+                                <div class="skeleton" style="width: 90%; height: 35px; margin-top: 15px; border-radius: 6px;"></div>
+                            </div>
+                            <div class="hide-on-load" style="width: 100%;">
+                                <div class="widget-header">
+                                    <svg viewBox="0 0 24 24"><path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm8.94-5c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06z"/></svg>
+                                    Sun Cycle
+                                </div>
+                                <div class="sun-schedule-track">
+                                    <div class="sun-time-row">
+                                        <div class="sun-label">
+                                            <svg viewBox="0 0 24 24"><path d="M12 6.5c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                                            <span>Sunrise</span>
+                                        </div>
+                                        <span class="sun-val" id="val-sunrise">00:00 AM</span>
+                                    </div>
+                                    <div class="sun-time-row" style="border-top: 1px solid var(--card-border); padding-top: 10px; margin-top: 4px;">
+                                        <div class="sun-label">
+                                            <svg viewBox="0 0 24 24"><path d="M12.3 22h-.1c-5.5 0-10-4.5-10-10 0-4.8 3.5-8.9 8.2-9.8.5-.1 1 .2 1.2.7.2.5 0 1.1-.4 1.4-3.5 2.4-4.8 7.2-2.9 10.9 1.9 3.6 6.5 5.3 10.2 3.8.5-.2 1.1 0 1.4.4.3.4.3 1-.1 1.4-2.1 2-5 3.2-7.9 3.2z"/></svg>
+                                            <span>Sunset</span>
+                                        </div>
+                                        <span class="sun-val" id="val-sunset">00:00 PM</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- UV Index Card -->
+                        <div class="detail-widget glass-panel fade-in delay-4">
+                            <div class="show-on-load">
+                                <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                                <div class="skeleton skeleton-title" style="width: 40%; margin-top: 15px; margin-bottom: 0;"></div>
+                            </div>
+                            <div class="hide-on-load">
+                                <div class="widget-header">
+                                    <svg viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1z"/></svg>
+                                    UV Exposure
+                                </div>
+                                <div class="widget-body">
+                                    <span class="widget-val" id="val-uv-index">0</span>
+                                    <span class="widget-desc" id="val-uv-desc">Low</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Pressure Card -->
+                        <div class="detail-widget glass-panel fade-in delay-4">
+                            <div class="show-on-load">
+                                <div class="skeleton skeleton-text" style="width: 60%;"></div>
+                                <div class="skeleton skeleton-title" style="width: 40%; margin-top: 15px; margin-bottom: 0;"></div>
+                            </div>
+                            <div class="hide-on-load">
+                                <div class="widget-header">
+                                    <svg viewBox="0 0 24 24"><path d="M9.81 12h8.38c-.37-2.61-2.42-4.66-5.03-5.03v8.38c2.61-.37 4.66-2.42 5.03-5.03H9.81c.37 2.61 2.42 4.66 5.03 5.03V6.97C12.23 7.34 10.18 9.39 9.81 12zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+                                    Barometer
+                                </div>
+                                <div class="widget-body">
+                                    <span class="widget-val" id="val-pressure">-- hPa</span>
+                                    <span class="widget-desc">Atmospheric pressure.</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <!-- Row 2: Chart.js Hourly Graph Line and Probability Bar -->
+                <div class="chart-card glass-panel fade-in delay-4">
+                    <div class="chart-header">
+                        <span class="chart-title">
+                            <svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+                            Hourly Forecast &amp; Rain Probability
+                        </span>
+                    </div>
+                    
+                    <!-- Chart loading skeletons -->
+                    <div class="show-on-load" style="height: 100%; min-height: 250px;">
+                        <div class="skeleton" style="width: 100%; height: 100%; border-radius: 12px; min-height: 250px;"></div>
+                    </div>
+                    
+                    <div class="chart-container hide-on-load">
+                        <canvas id="hourly-chart"></canvas>
+                    </div>
+                </div>
+                
+            </section>
+            
+        </div>
+    </main>
+
+    <!-- Global Toast Alerts Portal -->
+    <div id="toast-container" class="toast-container"></div>
+    
+    <!-- Info Badge for Offline/Inactive API Key fallback state -->
+    <div id="demo-badge" class="demo-badge">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+        Demo Data Mode
+    </div>
+
+    <!-- Application Script Initializer -->
+    <script type="module" src="js/app.js"></script>
+
+</body>
+</html>
