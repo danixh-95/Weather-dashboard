@@ -91,3 +91,6 @@ SkyGlass is fully static and contains zero backend code, making it instantly dep
 2. Go to repository **Settings** -> **Pages**.
 3. Under **Build and deployment**, select `main` branch and `/` root directory.
 4. Save and copy the generated URL.
+
+## Update
+Testing GitHub achievements.
